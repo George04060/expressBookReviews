@@ -18,16 +18,15 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 
 //only registered users can login
 regd_users.post("/login", (req,res) => {
-    const { username, password } =  req.body;
+    const { username, password } = req.body;
 
     if (authenticatedUser(username, password)) {
-        let accessToken =  generateAccessToken(username);
+        let accessToken = generateAccessToken(username);
         req.session.authorization = { accessToken };
-        return res.status(200),express.json({message: "User successfully logged in" });
+        return res.send("User successfully logged in");
     } else {
-        return res.status(403),express.json({message: "Invalid credentials" });
-    }
-
+        return res.send("Invalid Login. Check username and password");
+  }
 });
 
 // Add a book review

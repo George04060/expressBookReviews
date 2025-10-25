@@ -32,57 +32,76 @@ public_users.get('/', async function (req, res) {
     } catch (error) {
       return res.send("Error retrieving books");
     }
-  });
+});
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
-    const isbn = req.params.isbn;
-    const book = books[isbn];
-    
-    if (book) {
-      return res.send(JSON.stringify(book, null, 4));
-    } else {
+public_users.get('/isbn/:isbn', async function (req, res) {
+    try {
+        const isbn = req.params.isbn;
+        const book = await new Promise((resolve, reject) => {
+          if (books[isbn]) {
+            resolve(books[isbn]);
+          } else {
+            reject(new Error("Book not found"));
+          }
+        });
+        return res.send(JSON.stringify(book, null, 4));
+    } catch (error) {
       return res.send("Book not found");
     }
- });
+});
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-    const author = req.params.author;
-    const bookKeys = Object.keys(books);
-    const booksByAuthor = [];
-    
-    for (let i = 0; i < bookKeys.length; i++) {
-      const book = books[bookKeys[i]];
-      if (book.author === author) {
-        booksByAuthor.push(book);
+public_users.get('/author/:author', async function (req, res) {
+    try {
+      const author = req.params.author;
+      const booksByAuthor = await new Promise((resolve) => {
+        const bookKeys = Object.keys(books);
+        const filteredBooks = [];
+        
+        for (let i = 0; i < bookKeys.length; i++) {
+          const book = books[bookKeys[i]];
+          if (book.author === author) {
+            filteredBooks.push(book);
+          }
+        }
+        resolve(filteredBooks);
+      });
+      
+      if (booksByAuthor.length > 0) {
+        return res.send(JSON.stringify(booksByAuthor, null, 4));
+      } else {
+        return res.send("No books found for this author");
       }
-    }
-    
-    if (booksByAuthor.length > 0) {
-      return res.send(JSON.stringify(booksByAuthor, null, 4));
-    } else {
-      return res.send("No books found for this author");
+    } catch (error) {
+      return res.send("Error retrieving books by author");
     }
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-    const title = req.params.title;
-    const bookKeys = Object.keys(books);
-    const booksByTitle = [];
-    
-    for (let i = 0; i < bookKeys.length; i++) {
-      const book = books[bookKeys[i]];
-      if (book.title === title) {
-        booksByTitle.push(book);
+public_users.get('/title/:title', async function (req, res) {
+    try {
+      const title = req.params.title;
+      const booksByTitle = await new Promise((resolve) => {
+        const bookKeys = Object.keys(books);
+        const filteredBooks = [];
+        
+        for (let i = 0; i < bookKeys.length; i++) {
+          const book = books[bookKeys[i]];
+          if (book.title === title) {
+            filteredBooks.push(book);
+          }
+        }
+        resolve(filteredBooks);
+      });
+      
+      if (booksByTitle.length > 0) {
+        return res.send(JSON.stringify(booksByTitle, null, 4));
+      } else {
+        return res.send("No books found for this title");
       }
-    }
-    
-    if (booksByTitle.length > 0) {
-      return res.send(JSON.stringify(booksByTitle, null, 4));
-    } else {
-      return res.send("No books found for this title");
+    } catch (error) {
+      return res.send("Error retrieving books by title");
     }
 });
 
